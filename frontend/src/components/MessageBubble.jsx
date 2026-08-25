@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Copy, Check, Sparkles, User, Volume2, VolumeX, ThumbsUp, ThumbsDown, Square } from 'lucide-react';
+import { Copy, Check, Volume2, VolumeX, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { api } from '../services/api';
 import { playSpeech, stopSpeech } from '../services/voice';
 
@@ -39,7 +39,6 @@ export default function MessageBubble({ message, isLast, isStreaming, profile })
     };
   }, [isPlayingAudio]);
 
-  // Check if text has Arabic/Urdu script
   const isUrduScript = /[\u0600-\u06FF]/.test(message.content);
 
   const formatTime = (ts) => {
@@ -52,62 +51,66 @@ export default function MessageBubble({ message, isLast, isStreaming, profile })
     }
   };
 
+  // User Message (Right-aligned ChatGPT / WhatsApp style bubble)
+  if (isUser) {
+    return (
+      <div className="w-full flex justify-end px-3 sm:px-6 py-2">
+        <div className="max-w-[85%] sm:max-w-xl flex flex-col items-end">
+          <div className="bg-[#2f2f2f] text-[#f0f0f0] rounded-2xl rounded-tr-xs px-4 py-2.5 text-sm sm:text-base leading-relaxed shadow-sm border border-white/5 whitespace-pre-wrap break-words">
+            {message.content}
+          </div>
+          <span className="text-[10px] text-gray-500 mt-1 mr-1">
+            {formatTime(message.timestamp)}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // AI Message (Left-aligned with Cat mascot)
   return (
-    <div className={`py-4 px-3 sm:px-6 w-full flex justify-center ${isUser ? 'bg-transparent' : 'bg-[#212121]/40 border-y border-white/[0.03]'}`}>
-      <div className="max-w-3xl w-full flex gap-3.5 sm:gap-4 items-start">
-        {/* Avatar */}
+    <div className="w-full flex justify-start px-3 sm:px-6 py-3 bg-[#1e1e1e]/40 border-y border-white/[0.02]">
+      <div className="max-w-3xl w-full flex gap-3 items-start">
+        {/* Cat Avatar */}
         <div className="shrink-0 mt-0.5">
-          {isUser ? (
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-pink-500 to-rose-400 text-white flex items-center justify-center font-bold text-xs shadow-sm shadow-pink-500/20">
-              {profile?.name ? profile.name.charAt(0).toUpperCase() : 'A'}
-            </div>
-          ) : (
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-tr from-purple-600 via-purple-500 to-pink-500 text-white flex items-center justify-center text-sm shadow-sm shadow-purple-500/30 border border-purple-400/20">
-              🐱
-            </div>
-          )}
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-gradient-to-tr from-purple-600 via-purple-500 to-pink-500 text-white flex items-center justify-center text-sm shadow-sm shadow-purple-500/20 border border-purple-400/20">
+            🐱
+          </div>
         </div>
 
-        {/* Message Content Container */}
+        {/* AI Content */}
         <div className="flex-1 min-w-0 space-y-1.5">
-          {/* Header (Sender Name + Time) */}
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-gray-300 flex items-center gap-1.5">
-              {isUser ? (profile?.name || 'Aap') : 'Billa ai'}
+            <span className="text-xs font-semibold text-purple-300">
+              Billa ai
             </span>
             <span className="text-[10px] text-gray-500">
               {formatTime(message.timestamp)}
             </span>
           </div>
 
-          {/* Body */}
-          <div className={`text-sm leading-relaxed text-[#ececec] markdown-content ${isUrduScript ? 'urdu-text' : ''}`}>
-            {isUser ? (
-              <div className="whitespace-pre-wrap">{message.content}</div>
-            ) : (
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {message.content}
-              </ReactMarkdown>
-            )}
+          <div className={`text-sm sm:text-base leading-relaxed text-[#e6e6e6] markdown-content break-words ${isUrduScript ? 'urdu-text' : ''}`}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {message.content}
+            </ReactMarkdown>
 
-            {/* Live typing pulse for streaming message */}
-            {isStreaming && isLast && !isUser && (
+            {isStreaming && isLast && (
               <span className="inline-block w-2 h-4 ml-1 bg-purple-400 rounded-xs animate-pulse align-middle" />
             )}
           </div>
 
-          {/* Action Bar (Copy, Listen Audio, Feedback) for AI messages */}
-          {!isUser && message.content && !isStreaming && (
-            <div className="pt-1 flex items-center gap-1.5">
-              {/* Listen to Message / Text-to-Speech */}
+          {/* Action Bar (Audio, Copy, Feedback) */}
+          {message.content && !isStreaming && (
+            <div className="pt-1.5 flex items-center gap-1.5 flex-wrap">
+              {/* Listen Button */}
               <button
                 onClick={handleToggleAudio}
-                className={`flex items-center gap-1 text-[11px] px-2 py-0.5 rounded transition-colors ${
+                className={`flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-md transition-colors ${
                   isPlayingAudio
-                    ? 'bg-pink-600/40 text-pink-300 border border-pink-500/30 animate-pulse'
+                    ? 'bg-pink-600/30 text-pink-300 border border-pink-500/40 animate-pulse'
                     : 'text-gray-400 hover:text-pink-300 bg-[#2b2b2b] hover:bg-[#353535]'
                 }`}
-                title={isPlayingAudio ? "Stop speaking" : "Listen to answer (Text-to-Speech)"}
+                title="Listen to message"
               >
                 {isPlayingAudio ? (
                   <>
@@ -122,11 +125,11 @@ export default function MessageBubble({ message, isLast, isStreaming, profile })
                 )}
               </button>
 
-              {/* Copy */}
+              {/* Copy Button */}
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-200 bg-[#2b2b2b] hover:bg-[#353535] px-2 py-0.5 rounded transition-colors"
-                title="Copy response"
+                className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-gray-200 bg-[#2b2b2b] hover:bg-[#353535] px-2.5 py-1 rounded-md transition-colors"
+                title="Copy text"
               >
                 {copied ? (
                   <>
@@ -150,19 +153,19 @@ export default function MessageBubble({ message, isLast, isStreaming, profile })
                       conversation_id: message.conversation_id || 'conv',
                       rating: 'thumbs_up'
                     });
-                    alert('Thanks for the feedback! 👍');
+                    alert('Feedback saved! 👍');
                   } catch (e) {}
                 }}
-                className="p-1 text-gray-400 hover:text-green-400 bg-[#2b2b2b] hover:bg-[#353535] rounded transition-colors"
+                className="p-1 text-gray-400 hover:text-green-400 bg-[#2b2b2b] hover:bg-[#353535] rounded-md transition-colors"
                 title="Good response"
               >
                 <ThumbsUp className="w-3 h-3" />
               </button>
 
-              {/* Thumbs Down / Improve */}
+              {/* Thumbs Down */}
               <button
                 onClick={async () => {
-                  const note = prompt('What could be improved about this response? (Optional note for improvement):');
+                  const note = prompt('What could be improved? (Optional note):');
                   if (note !== null) {
                     try {
                       await api.submitFeedback({
@@ -171,12 +174,12 @@ export default function MessageBubble({ message, isLast, isStreaming, profile })
                         rating: 'thumbs_down',
                         comment: note
                       });
-                      alert('Feedback saved for AI tuning! 🛠️');
+                      alert('Feedback saved! 🛠️');
                     } catch (e) {}
                   }
                 }}
-                className="p-1 text-gray-400 hover:text-red-400 bg-[#2b2b2b] hover:bg-[#353535] rounded transition-colors"
-                title="Needs improvement"
+                className="p-1 text-gray-400 hover:text-red-400 bg-[#2b2b2b] hover:bg-[#353535] rounded-md transition-colors"
+                title="Improve response"
               >
                 <ThumbsDown className="w-3 h-3" />
               </button>

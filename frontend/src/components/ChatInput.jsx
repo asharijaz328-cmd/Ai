@@ -23,7 +23,7 @@ export default function ChatInput({
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 140)}px`;
     }
   }, [text]);
 
@@ -47,9 +47,8 @@ export default function ChatInput({
 
     const recognizer = createSpeechRecognizer({
       lang: voiceLang,
-      onResult: ({ final, interim, full }) => {
+      onResult: ({ final, interim }) => {
         setText(prev => {
-          // If previous text exists, append nicely
           const base = prev ? prev.trim() + ' ' : '';
           return (base + (final || interim)).trim();
         });
@@ -64,7 +63,7 @@ export default function ChatInput({
     });
 
     if (!recognizer) {
-      alert("Aapke browser mein Speech Recognition (Mic) support nahi mila. Baraye meherbani Chrome ya Edge use karein.");
+      alert("Aapke browser mein Speech Recognition support nahi mila.");
       return;
     }
 
@@ -82,7 +81,6 @@ export default function ChatInput({
     e?.preventDefault();
     if (!text.trim() || isStreaming || disabled) return;
     
-    // Stop listening if active
     if (isListening && recognizerRef.current) {
       try { recognizerRef.current.stop(); } catch {}
       setIsListening(false);
@@ -109,20 +107,20 @@ export default function ChatInput({
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto px-3 sm:px-4 pb-3 sm:pb-5">
+    <div className="w-full max-w-3xl mx-auto px-2.5 sm:px-4 py-2 sm:pb-3">
       {/* Listening Indicator Bar */}
       {isListening && (
-        <div className="mb-2 flex items-center justify-between bg-pink-950/40 border border-pink-500/30 rounded-xl px-3 py-1.5 text-xs text-pink-300 animate-pulse">
+        <div className="mb-1.5 flex items-center justify-between bg-pink-950/50 border border-pink-500/40 rounded-xl px-3 py-1 text-xs text-pink-300 animate-pulse">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-pink-500 animate-ping" />
-            <span className="font-medium">
+            <span className="font-medium text-[11px] sm:text-xs">
               Sun raha hoon... ({voiceLang === 'ur-PK' ? 'Urdu 🇵🇰' : 'English 🇬🇧'})
             </span>
           </div>
           <button
             type="button"
             onClick={toggleListening}
-            className="text-[11px] bg-pink-500/20 hover:bg-pink-500/40 text-pink-200 px-2 py-0.5 rounded transition-colors"
+            className="text-[10px] bg-pink-500/20 hover:bg-pink-500/40 text-pink-200 px-2 py-0.5 rounded transition-colors"
           >
             Done
           </button>
@@ -130,24 +128,24 @@ export default function ChatInput({
       )}
 
       {/* Main Input Box */}
-      <div className={`relative bg-[#2f2f2f] rounded-2xl border transition-all ${
+      <div className={`relative bg-[#2c2c2c] rounded-2xl border transition-all ${
         isListening 
           ? 'border-pink-500/60 shadow-lg shadow-pink-500/10' 
-          : 'border-[#404040] focus-within:border-purple-500/50 shadow-xl'
+          : 'border-[#3d3d3d] focus-within:border-purple-500/50 shadow-md'
       }`}>
         <textarea
           ref={textareaRef}
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={isListening ? "Bolte rahein, main likh raha hoon..." : "Billa ai se kuch bhi poochein... (Roman Urdu, Urdu, English)"}
+          placeholder={isListening ? "Bolte rahein..." : "Message Billa ai..."}
           rows={1}
           disabled={disabled}
-          className="w-full bg-transparent text-sm text-[#ececec] placeholder-gray-400 px-4 pt-3.5 pb-11 resize-none outline-none max-h-44 overflow-y-auto"
+          className="w-full bg-transparent text-sm text-[#ececec] placeholder-gray-400 px-3.5 pt-2.5 pb-9 sm:pb-10 resize-none outline-none max-h-36 overflow-y-auto"
         />
 
-        {/* Bottom bar inside input */}
-        <div className="absolute bottom-2 left-3 right-2 flex items-center justify-between pointer-events-none">
+        {/* Bottom Bar inside Input */}
+        <div className="absolute bottom-1.5 left-2.5 right-2 flex items-center justify-between pointer-events-none">
           {/* Left Controls: Model Switcher & Mic Language */}
           <div className="flex items-center gap-1.5 pointer-events-auto">
             {/* Model Switcher Pill */}
@@ -155,35 +153,32 @@ export default function ChatInput({
               <button
                 type="button"
                 onClick={() => setShowModelMenu(!showModelMenu)}
-                className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-purple-300 bg-[#242424] hover:bg-[#2c2c2c] px-2.5 py-1 rounded-full border border-white/5 transition-colors"
+                className="flex items-center gap-1 text-[10px] sm:text-[11px] text-gray-400 hover:text-purple-300 bg-[#222] hover:bg-[#282828] px-2 py-0.5 rounded-full border border-white/5 transition-colors"
               >
-                <Sparkles className="w-3 h-3 text-purple-400" />
+                <Sparkles className="w-2.5 h-2.5 text-purple-400" />
                 <span>{modelLabels[provider] || "Gemini"}</span>
-                <ChevronDown className="w-3 h-3 ml-0.5" />
+                <ChevronDown className="w-2.5 h-2.5" />
               </button>
 
               {/* Model Dropdown Menu */}
               {showModelMenu && (
                 <div 
-                  className="absolute bottom-full left-0 mb-2 w-48 bg-[#1e1e1e] border border-[#3a3a3a] rounded-xl shadow-2xl py-1 z-50 animate-fade-in"
+                  className="absolute bottom-full left-0 mb-1.5 w-44 bg-[#1e1e1e] border border-[#3a3a3a] rounded-xl shadow-2xl py-1 z-50 animate-fade-in"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <div className="px-3 py-1 text-[10px] uppercase font-semibold text-gray-500 tracking-wider">
-                    AI Engine
-                  </div>
                   <button
                     onClick={() => { setProvider('gemini'); setShowModelMenu(false); }}
                     className={`w-full text-left px-3 py-1.5 text-xs hover:bg-[#2c2c2c] flex items-center justify-between ${provider === 'gemini' ? 'text-purple-400 font-semibold' : 'text-gray-300'}`}
                   >
                     <span>Google Gemini</span>
-                    <span className="text-[10px] bg-green-500/20 text-green-300 px-1.5 py-0.5 rounded">Free</span>
+                    <span className="text-[9px] bg-green-500/20 text-green-300 px-1 py-0.5 rounded">Free</span>
                   </button>
                   <button
                     onClick={() => { setProvider('groq'); setShowModelMenu(false); }}
                     className={`w-full text-left px-3 py-1.5 text-xs hover:bg-[#2c2c2c] flex items-center justify-between ${provider === 'groq' ? 'text-orange-400 font-semibold' : 'text-gray-300'}`}
                   >
                     <span>Groq (OSS 120B)</span>
-                    <span className="text-[10px] bg-orange-500/20 text-orange-300 px-1.5 py-0.5 rounded">Ultra Fast</span>
+                    <span className="text-[9px] bg-orange-500/20 text-orange-300 px-1 py-0.5 rounded">Fast</span>
                   </button>
                 </div>
               )}
@@ -194,27 +189,27 @@ export default function ChatInput({
               <button
                 type="button"
                 onClick={() => setShowLangMenu(!showLangMenu)}
-                className="flex items-center gap-1 text-[11px] text-gray-400 hover:text-pink-300 bg-[#242424] hover:bg-[#2c2c2c] px-2 py-1 rounded-full border border-white/5 transition-colors"
+                className="flex items-center gap-1 text-[10px] sm:text-[11px] text-gray-400 hover:text-pink-300 bg-[#222] hover:bg-[#282828] px-2 py-0.5 rounded-full border border-white/5 transition-colors"
                 title="Voice Language"
               >
-                <Globe className="w-3 h-3 text-pink-400" />
-                <span>{voiceLang === 'ur-PK' ? 'Urdu' : 'English'}</span>
+                <Globe className="w-2.5 h-2.5 text-pink-400" />
+                <span>{voiceLang === 'ur-PK' ? 'Urdu' : 'Eng'}</span>
               </button>
 
               {showLangMenu && (
                 <div 
-                  className="absolute bottom-full left-0 mb-2 w-36 bg-[#1e1e1e] border border-[#3a3a3a] rounded-xl shadow-2xl py-1 z-50 animate-fade-in"
+                  className="absolute bottom-full left-0 mb-1.5 w-32 bg-[#1e1e1e] border border-[#3a3a3a] rounded-xl shadow-2xl py-1 z-50 animate-fade-in"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <button
                     onClick={() => { setVoiceLang('ur-PK'); setShowLangMenu(false); }}
-                    className={`w-full text-left px-3 py-1.5 text-xs hover:bg-[#2c2c2c] ${voiceLang === 'ur-PK' ? 'text-pink-400 font-semibold' : 'text-gray-300'}`}
+                    className={`w-full text-left px-2.5 py-1.5 text-xs hover:bg-[#2c2c2c] ${voiceLang === 'ur-PK' ? 'text-pink-400 font-semibold' : 'text-gray-300'}`}
                   >
-                    🇵🇰 Urdu (Pakistan)
+                    🇵🇰 Urdu
                   </button>
                   <button
                     onClick={() => { setVoiceLang('en-US'); setShowLangMenu(false); }}
-                    className={`w-full text-left px-3 py-1.5 text-xs hover:bg-[#2c2c2c] ${voiceLang === 'en-US' ? 'text-pink-400 font-semibold' : 'text-gray-300'}`}
+                    className={`w-full text-left px-2.5 py-1.5 text-xs hover:bg-[#2c2c2c] ${voiceLang === 'en-US' ? 'text-pink-400 font-semibold' : 'text-gray-300'}`}
                   >
                     🇬🇧 English
                   </button>
@@ -224,17 +219,17 @@ export default function ChatInput({
           </div>
 
           {/* Right Controls: Mic Button & Send / Stop Button */}
-          <div className="flex items-center gap-2 pointer-events-auto">
+          <div className="flex items-center gap-1.5 pointer-events-auto">
             {/* Microphone Button */}
             <button
               type="button"
               onClick={toggleListening}
-              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-md active:scale-95 ${
+              className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all shadow-sm active:scale-95 ${
                 isListening
                   ? 'bg-pink-600 hover:bg-pink-500 text-white animate-pulse ring-2 ring-pink-400/50'
-                  : 'bg-[#242424] hover:bg-[#2c2c2c] text-gray-300 hover:text-pink-400 border border-white/5'
+                  : 'bg-[#222] hover:bg-[#2c2c2c] text-gray-300 hover:text-pink-400 border border-white/5'
               }`}
-              title={isListening ? "Stop listening" : "Speak in Urdu/English (Voice input)"}
+              title={isListening ? "Stop listening" : "Speak (Voice input)"}
             >
               {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
             </button>
@@ -244,32 +239,28 @@ export default function ChatInput({
               <button
                 type="button"
                 onClick={onStopStreaming}
-                className="w-8 h-8 rounded-full bg-red-500/80 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-md active:scale-95"
-                title="Stop generation"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-500/80 hover:bg-red-600 text-white flex items-center justify-center transition-all shadow-sm active:scale-95"
+                title="Stop"
               >
-                <Square className="w-3.5 h-3.5 fill-current" />
+                <Square className="w-3 h-3 fill-current" />
               </button>
             ) : (
               <button
                 type="button"
                 onClick={handleSubmit}
                 disabled={!text.trim() || disabled}
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-md ${
+                className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all shadow-sm ${
                   text.trim() && !disabled
                     ? 'bg-purple-600 hover:bg-purple-500 text-white active:scale-95'
                     : 'bg-white/10 text-gray-500 cursor-not-allowed'
                 }`}
-                title="Send message"
+                title="Send"
               >
-                <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+                <ArrowUp className="w-3.5 h-3.5 stroke-[2.5]" />
               </button>
             )}
           </div>
         </div>
-      </div>
-
-      <div className="text-center mt-2 text-[11px] text-gray-500">
-        Billa ai can make mistakes. Check important info.
       </div>
     </div>
   );

@@ -250,7 +250,7 @@ export default function App() {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#212121] text-[#ececec]">
+    <div className="flex h-[100dvh] w-full overflow-hidden bg-[#212121] text-[#ececec]">
       {/* Sidebar */}
       <Sidebar
         conversations={conversations}
